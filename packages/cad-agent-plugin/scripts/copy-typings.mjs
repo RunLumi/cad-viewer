@@ -11,8 +11,17 @@
  * need) and copy it here before `vite build`. Update those files when the
  * public API changes.
  */
-import { cpSync, mkdirSync, rmSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 
+// Node's native recursive cpSync (cpSyncCopyDir) fails with EACCES on
+// virtiofs bind mounts (Apple container), so copy file-by-file instead.
 rmSync('lib', { recursive: true, force: true })
 mkdirSync('lib', { recursive: true })
-cpSync('typings', 'lib', { recursive: true })
+for (const entry of readdirSync('typings', { recursive: true })) {
+  const src = join('typings', entry)
+  if (statSync(src).isFile()) {
+    mkdirSync(dirname(join('lib', entry)), { recursive: true })
+    copyFileSync(src, join('lib', entry))
+  }
+}
