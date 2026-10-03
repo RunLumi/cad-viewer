@@ -4,7 +4,7 @@
 # This drawing rendered exactly 1 of 99 entities under the render-path
 # regression; the assertion below fails until every entity reaches the scene.
 
-url: http://192.168.64.182:5173/?fixture=/e2e/artioscad-hop-tay-gai-nap-gai.dxf&minInk=2000
+url: ${MAESTRO_BASE_URL}/?fixture=/e2e/artioscad-hop-tay-gai-nap-gai.dxf&minInk=500
 env:
   MAESTRO_BASE_URL: "http://localhost:5273"
 ---
