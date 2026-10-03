@@ -6,7 +6,7 @@
 
 url: ${MAESTRO_BASE_URL}/?fixture=/e2e/artioscad-hop-tay-gai-nap-gai.dxf&minInk=500
 env:
-  MAESTRO_BASE_URL: "http://localhost:5273"
+  MAESTRO_BASE_URL: "http://192.168.64.1:5273"
 ---
 - launchApp:
     clearState: true
