@@ -15,11 +15,8 @@ env:
 - launchApp:
     clearState: true
 - assertVisible:
-    text: "e2e: file=artioscad-hop-cung.dxf"
-    timeoutMillis: 30000
+    text: ".*e2e: file=artioscad-hop-cung\\.dxf.*"
 - assertVisible:
-    text: "entities=142 pending=false"
-    timeoutMillis: 60000
+    text: ".*entities=142 pending=false.*"
 - assertVisible:
-    text: "inkOK=true"
-    timeoutMillis: 30000
+    text: ".*inkOK=true.*"

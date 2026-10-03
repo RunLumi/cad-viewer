@@ -160,6 +160,7 @@ function reportUntilSettled(fileName: string) {
   let getInk: (() => number) | null = null
   let frameRequested = false
   let retried = false
+  let ticks = 0
   const timer = setInterval(() => {
     const entities = countDatabaseEntities()
     const rendered = countRenderedEntities()
@@ -179,8 +180,9 @@ function reportUntilSettled(fileName: string) {
     }
     const ink = getInk === null ? -1 : getInk()
     const inkOK = ink >= 0 && ink >= getMinInk()
+    ticks++
     setE2EStatus(
-      `e2e: file=${fileName} entities=${entities} rendered=${rendered} ink=${ink} inkOK=${inkOK} pending=${pending}`
+      `e2e: file=${fileName} entities=${entities} rendered=${rendered} ink=${ink} inkOK=${inkOK} pending=${pending} tick=${ticks}`
     )
     // The open pipeline can silently produce a blank document (openDocument
     // returning false — see upstream issue #384). One automatic retry keeps
@@ -224,6 +226,9 @@ export async function openFixtureFromUrl(
   const fixture = new URLSearchParams(window.location.search).get('fixture')
   if (!fixture) return false
   const fileName = fixture.split('/').pop() || 'fixture.dxf'
+  // Show the status line immediately so UI tests can sync on it before the
+  // open completes.
+  setE2EStatus(`e2e: file=${fileName} opening...`)
   try {
     const resp = await fetch(fixture)
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
