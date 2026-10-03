@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PrintUp 3D — box view</title>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #101014; overflow: hidden;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #app { position: fixed; inset: 0; }
+  .panel { position: fixed; top: 16px; left: 16px; z-index: 10; padding: 14px 16px;
+    background: rgba(16, 16, 22, 0.82); border: 1px solid #2c2c36; border-radius: 12px;
+    color: #e8e8f0; width: 290px; backdrop-filter: blur(6px); }
+  .panel h1 { font-size: 14px; margin: 0 0 2px; letter-spacing: 0.02em; }
+  .panel .sub { font-size: 11px; color: #9a9ab0; margin-bottom: 12px; }
+  .row { display: flex; gap: 8px; margin: 10px 0; font-size: 12px; }
+  button { background: #4f5fd0; border: none; color: #fff; padding: 7px 12px;
+    border-radius: 8px; font-size: 12px; cursor: pointer; }
+  button.ghost { background: #2c2c3a; }
+  button:hover { filter: brightness(1.1); }
+  input[type="file"] { display: none; }
+  #dims { font-size: 12px; color: #9fe0a0; margin: 8px 0; min-height: 15px; }
+  .foot { font-size: 10px; color: #6a6a80; margin-top: 10px; line-height: 1.5; }
+  .foot a { color: #8891ff; }
+  #err { color: #ff6a6a; font-size: 11px; margin-top: 8px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="panel">
+  <h1>PrintUp 3D · box view</h1>
+  <div class="sub">separate view from the 2D editor — drag to orbit, wheel to zoom</div>
+  <div id="dims"></div>
+  <div class="row">
+    <button id="demo">Load demo box</button>
+    <button class="ghost" id="filebtn">Open DXF…</button>
+    <input id="file" type="file" accept=".dxf,.DXF" />
+  </div>
+  <div id="err"></div>
+  <div class="foot">
+    Renders a die-line as its folded box: wall creases give the footprint
+    (L×W), the body band gives the height, and the original DXF linework is
+    mapped onto each wall face.<br/>
+    Includes <a href="./vendor/LICENSE-three.js.txt">three.js (MIT)</a>.
+    2D editor: <a href="/">printup-editor.runlumi.app</a>
+  </div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from './vendor/OrbitControls.js';
+
+// ---------- scene ----------
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+app.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101014);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 4000);
+camera.position.set(150, 130, 190);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(120, 220, 160);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6);
+fill.position.set(-140, 80, -120);
+scene.add(fill);
+
+let boxGroup = null;
+
+// ---------- DXF parsing (LINE + ARC, ACI color) ----------
+const ACI = { 1: 0xff5050, 2: 0xffd020, 3: 0x35d06a, 4: 0x35a5d0, 5: 0x3550ff, 6: 0xd040d0, 7: 0x1a1a1a };
+const aciColor = c => new THREE.Color(ACI[c] ?? 0x1a1a1a);
+function parseDXF(text) {
+  const raw = text.split(/\r?\n/);
+  const pairs = [];
+  for (let i = 0; i + 1 < raw.length; i += 2) pairs.push([raw[i].trim(), raw[i + 1].trim()]);
+  let ent = null; let props = {}; const out = [];
+  const flush = () => {
+    if (ent === 'LINE') out.push({ k: 'L', c: +(props['62'] ?? 7),
+      a: [+props['10'], +props['20']], b: [+props['11'], +props['21']] });
+    if (ent === 'ARC') out.push({ k: 'A', c: +(props['62'] ?? 7),
+      cx: +props['10'], cy: +props['20'], r: +props['40'], a0: +props['50'] * Math.PI / 180, a1: +props['51'] * Math.PI / 180 });
+    props = {};
+  };
+  for (const [c, v] of pairs) {
+    if (c === '0') { flush(); ent = v; }
+    else if (ent === 'LINE' || ent === 'ARC') props[c] = v;
+  }
+  flush();
+  return out;
+}
+function segsFromEntities(ents) {
+  const segs = [];
+  for (const e of ents) {
+    if (e.k === 'L') segs.push({ k: 'L', c: e.c, a: e.a, b: e.b });
+    else {
+      const pts = []; let span = e.a1 - e.a0;
+      while (span < 0) span += Math.PI * 2;
+      const n = Math.max(8, Math.ceil(span / (Math.PI / 24)));
+      for (let i = 0; i <= n; i++) {
+        const t = e.a0 + span * (i / n);
+        pts.push([e.cx + e.r * Math.cos(t), e.cy + e.r * Math.sin(t)]);
+      }
+      for (let i = 0; i + 1 < pts.length; i++) segs.push({ k: 'A', c: e.c, a: pts[i], b: pts[i + 1] });
+    }
+  }
+  return segs;
+}
+
+// ---------- footprint detection ----------
+const cluster = vals => {
+  const u = []; vals.sort((a, b) => a - b);
+  for (const v of vals) { if (u.length && Math.abs(u[u.length - 1] - v) < 1.2) continue; u.push(v); }
+  return u;
+};
+function detectBox(segs) {
+  let y0 = Infinity, y1 = -Infinity;
+  for (const s of segs) { y0 = Math.min(y0, s.a[1], s.b[1]); y1 = Math.max(y1, s.a[1], s.b[1]); }
+  const ys = cluster(segs
+    .filter(s => Math.abs(s.a[1] - s.b[1]) < 0.01 && Math.abs(s.a[0] - s.b[0]) > 0.01)
+    .map(s => s.a[1]));
+  let band = [y0, y1], best = 0;
+  for (let i = 0; i + 1 < ys.length; i++) {
+    const a = ys[i], b = ys[i + 1];
+    if (b - a < (y1 - y0) * 0.25) continue;
+    let ink = 0;
+    for (const s of segs) if (Math.abs(s.a[1] - s.b[1]) < 0.01 && s.a[1] >= a && s.a[1] <= b) ink += Math.abs(s.a[0] - s.b[0]);
+    if (ink > best) { best = ink; band = [a, b]; }
+  }
+  const H = band[1] - band[0];
+  const wallX = cluster(segs
+    .filter(s => Math.abs(s.a[0] - s.b[0]) < 0.01)
+    .filter(s => {
+      const lo = Math.min(s.a[1], s.b[1]), hi = Math.max(s.a[1], s.b[1]);
+      return Math.min(hi, band[1]) - Math.max(lo, band[0]) >= H * 0.85;
+    })
+    .map(s => s.a[0]));
+  const spans = [];
+  for (let i = 0; i + 1 < wallX.length; i++) {
+    const w = wallX[i + 1] - wallX[i];
+    if (w >= Math.max(20, H * 0.2)) spans.push({ x0: wallX[i], x1: wallX[i + 1], w });
+  }
+  return { band, H, spans };
+}
+
+// ---------- box build ----------
+function buildBox(segs) {
+  if (boxGroup) { scene.remove(boxGroup); boxGroup = null; }
+  const { band, H, spans } = detectBox(segs);
+  if (spans.length < 4) throw new Error('Could not detect 4 walls (found ' + spans.length + ') — is this a box die-line?');
+  const L = spans[0].w, W = spans[1].w;
+  const cardboard = new THREE.MeshStandardMaterial({ color: 0xe8dcc8, roughness: 0.85, metalness: 0.05, side: THREE.DoubleSide });
+
+  const segsIn = (xa, xb) => segs.filter(s => {
+    const mx = (s.a[0] + s.b[0]) / 2;
+    const inside = mx >= xa - 0.5 && mx <= xb + 0.5;
+    const yOk = Math.min(s.a[1], s.b[1]) >= band[0] - 0.6 && Math.max(s.a[1], s.b[1]) <= band[1] + 0.6;
+    return inside && yOk;
+  });
+  const wallArt = (parent, xa, xb, face) => {
+    const byColor = new Map();
+    for (const s of segsIn(xa, xb)) {
+      if (!byColor.has(s.c)) byColor.set(s.c, []);
+      const arr = byColor.get(s.c);
+      for (const p of [s.a, s.b]) {
+        const lx = p[0] - (xa + xb) / 2;
+        const ly = p[1] - (band[0] + band[1]) / 2;
+        let wx = lx, wz = face === 'front' ? 0.4 : face === 'back' ? -0.4 : 0;
+        if (face === 'right') { wx = 0.4; wz = -lx; }
+        if (face === 'left') { wx = -0.4; wz = lx; }
+        arr.push(wx, ly, wz);
+      }
+    }
+    for (const [c, arr] of byColor) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+      parent.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: aciColor(c) })));
+    }
+  };
+
+  boxGroup = new THREE.Group();
+  const faces = [
+    { name: 'front', geo: [L, H], pos: [0, 0, W / 2], rotY: 0, span: spans[0] },
+    { name: 'right', geo: [W, H], pos: [L / 2, 0, 0], rotY: H / 2, span: spans[1] },
+    { name: 'back', geo: [L, H], pos: [0, 0, -W / 2], rotY: Math.PI, span: spans[2] },
+    { name: 'left', geo: [W, H], pos: [-L / 2, 0, 0], rotY: -H / 2, span: spans[3] },
+  ];
+  for (const f of faces) {
+    const wall = new THREE.Group();
+    wall.position.set(...f.pos);
+    wall.rotation.y = f.rotY;
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(f.geo[0], f.geo[1]), cardboard);
+    wall.add(plane);
+    wallArt(wall, f.span.x0, f.span.x1, f.name);
+    boxGroup.add(wall);
+  }
+  const top = new THREE.Mesh(new THREE.PlaneGeometry(L, W), cardboard);
+  top.rotation.x = -Math.PI / 2; top.position.y = H / 2;
+  boxGroup.add(top);
+  const bottom = new THREE.Mesh(new THREE.PlaneGeometry(L, W), cardboard);
+  bottom.rotation.x = Math.PI / 2; bottom.position.y = -H / 2;
+  boxGroup.add(bottom);
+  scene.add(boxGroup);
+  controls.target.set(0, 0, 0);
+  camera.position.set(L * 1.2, H * 0.9, W * 2.2 + 90);
+  controls.update();
+  return { L, W, H, walls: spans.length };
+}
+
+// ---------- UI ----------
+const dimsEl = document.getElementById('dims');
+async function loadText(text, label) {
+  document.getElementById('err').textContent = '';
+  try {
+    const segs = segsFromEntities(parseDXF(text));
+    const info = buildBox(segs);
+    dimsEl.textContent = `Box ${info.L} × ${info.W} × ${info.H} — ${info.walls} walls`;
+  } catch (e) {
+    document.getElementById('err').textContent = 'Load failed: ' + e.message;
+  }
+}
+const DEMO = './demo/tuck-box.dxf';
+const demoBtn = document.getElementById('demo');
+demoBtn.onclick = async () => {
+  demoBtn.textContent = 'Loading…';
+  try { await loadText(await (await fetch(DEMO)).text(), 'demo'); }
+  catch (e) { document.getElementById('err').textContent = 'Load failed: ' + e.message; }
+  demoBtn.textContent = 'Load demo box';
+};
+document.getElementById('filebtn').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await loadText(await f.text(), f.name);
+};
+function tick() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick); }
+requestAnimationFrame(tick);
+demoBtn.click();
+</script>
+</body>
+</html>
