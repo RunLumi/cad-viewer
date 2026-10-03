@@ -207,7 +207,7 @@ function buildModel(segs) {
   };
   const panelMesh = (w, h) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
-      new THREE.MeshBasicMaterial({ color: 0x232028, side: THREE.DoubleSide }));
+      new THREE.MeshStandardMaterial({ color: 0xe8dcc8, roughness: 0.85, metalness: 0.05, side: THREE.DoubleSide }));
     m.rotation.x = -H;
     return m;
   };
