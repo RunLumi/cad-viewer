@@ -93,5 +93,10 @@
     "*.md": [
       "prettier --config ./.prettierrc.js --write"
     ]
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@mlightcad/data-model@1.15.1": "patches/@mlightcad__data-model@1.15.1.patch"
+    }
   }
 }

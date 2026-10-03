@@ -411,6 +411,18 @@ export function buildLineGeometry(
   points: AcGePoint3dLike[],
   material: THREE.Material
 ): AcTrBuiltLineGeometry | null {
+  // TEMP e2e debug: log build entry points (remove).
+  if (import.meta.env.DEV) {
+    const g = globalThis as { __batchLog?: string[] }
+    g.__batchLog ??= []
+    if (g.__batchLog.length < 400 && points.length) {
+      const p0 = points[0]
+      const p1 = points[Math.min(1, points.length - 1)]
+      g.__batchLog.push(
+        `build n=${points.length} p0=(${Number(p0.x).toFixed(2)},${Number(p0.y).toFixed(2)}) p1=(${Number(p1.x).toFixed(2)},${Number(p1.y).toFixed(2)})`
+      )
+    }
+  }
   if (points.length < 2) {
     return null
   }

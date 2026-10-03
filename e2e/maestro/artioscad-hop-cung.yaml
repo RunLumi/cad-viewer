@@ -1,0 +1,22 @@
+# ArtiosCAD R12 regression: hop cung box (142 model-space entities).
+#
+# Expects the dev server (pnpm dev) running with the ?fixture= hook from
+# src/e2eFixture.ts. The flow asserts the three.js scene ends up with the
+# same entity count as the parsed database (rendered=142) — the render-path
+# regression this guards against renders only a fraction of the drawing.
+#
+# Run: maestro test e2e/maestro/artioscad-hop-cung.yaml
+# (override the target with: maestro test -e MAESTRO_BASE_URL=http://localhost:5273 <flow>)
+
+url: ${MAESTRO_BASE_URL}/?fixture=/e2e/artioscad-hop-cung.dxf&minInk=250
+env:
+  MAESTRO_BASE_URL: "http://192.168.64.1:5273"
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    text: ".*e2e: file=artioscad-hop-cung\\.dxf.*"
+- assertVisible:
+    text: ".*entities=142 pending=false.*"
+- assertVisible:
+    text: ".*inkOK=true.*"

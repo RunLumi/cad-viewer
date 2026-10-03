@@ -39,9 +39,10 @@ import {
 } from '@mlightcad/cad-simple-viewer'
 import { MlCadViewer } from '@mlightcad/cad-viewer'
 import { ACDB_DRAW_CIRCLE_SIDES_DRAFT, ACGI_PAPER_SPACE_BACKGROUND, log } from '@mlightcad/data-model'
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 
 import { AcApQuitCmd } from './commands'
+import { openFixtureFromUrl } from './e2eFixture'
 import FileUpload from './components/FileUpload.vue'
 import { initializeLocale } from './locale'
 import { store } from './store'
@@ -52,6 +53,12 @@ AcApSettingManager.configure({
 })
 
 initializeLocale()
+
+// Dev-only e2e entry: `?fixture=<url>` opens a drawing through the real
+// file-select path (see src/e2eFixture.ts).
+onMounted(() => {
+  void openFixtureFromUrl(handleFileSelect)
+})
 
 const initialize = () => {
   if (import.meta.env.DEV) {

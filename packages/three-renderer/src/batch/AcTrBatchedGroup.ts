@@ -1413,7 +1413,46 @@ export class AcTrBatchedGroup extends THREE.Group {
     if (geometry.hasAttribute('lineDistance')) {
       AcTrBufferGeometryUtil.recomputeLineDistanceForLineSegments(geometry)
     }
+    // TEMP e2e debug: log incoming vertex data before batching (remove).
+    if (import.meta.env.DEV) {
+      const g = globalThis as { __batchLog?: string[] }
+      g.__batchLog ??= []
+      if (g.__batchLog.length < 400) {
+        const pos = geometry.getAttribute('position')
+        const sample: string[] = []
+        if (pos) {
+          for (let i = 0; i < Math.min(4, pos.count); i++) {
+            sample.push(
+              `${pos.getComponent(i, 0).toFixed(2)},${pos
+                .getComponent(i, 1)
+                .toFixed(2)}`
+            )
+          }
+        }
+        g.__batchLog.push(
+          `append id=${options.objectId} idx=${hasIndex} n=${
+            pos ? pos.count : -1
+          } sample=[${sample.join(' | ')}] offset=(${worldOffset.x.toFixed(
+            2
+          )},${worldOffset.y.toFixed(2)})`
+        )
+      }
+    }
     const geometryId = batchedLine.addGeometry(geometry, -1, -1, worldOffset)
+    // TEMP e2e debug: log post-rebase state (remove).
+    if (import.meta.env.DEV) {
+      const g = globalThis as { __batchLog?: string[] }
+      const pos2 = geometry.getAttribute('position')
+      if (g.__batchLog && g.__batchLog.length < 400 && pos2) {
+        g.__batchLog.push(
+          `  rebased id=${geometryId} batchOrigin=(${batchedLine.origin?.x.toFixed(
+            2
+          )},${batchedLine.origin?.y.toFixed(2)}) first=(${pos2
+            .getComponent(0, 0)
+            .toFixed(2)},${pos2.getComponent(0, 1).toFixed(2)})`
+        )
+      }
+    }
     batchedLine.setGeometryInfo(geometryId, { objectId: options.objectId })
 
     const item: AcTrEntityInBatchedObject = {

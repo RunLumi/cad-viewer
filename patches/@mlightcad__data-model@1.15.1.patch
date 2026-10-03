@@ -1,0 +1,30 @@
+--- a/lib/entity/AcDbEntity.js
++++ b/lib/entity/AcDbEntity.js
+@@ -490,7 +490,8 @@
+     AcDbEntity.prototype.dxfInFields = function (filer) {
+         _super.prototype.dxfInFields.call(this, filer);
+         // Tolerate missing AcDbEntity marker (some writers omit it).
+-        if (!filer.atSubclassData('AcDbEntity')) {
++        var sawAcDbEntityMarker = filer.atSubclassData('AcDbEntity');
++        if (!sawAcDbEntityMarker) {
+             var next = filer.peekItem();
+             if (next && Number(next.code) === 100) {
+                 // Different subclass — leave for derived class.
+@@ -555,6 +556,17 @@
+                     // Stay resilient to unknown AcDbEntity codes (forward compatible).
+                     // Do not push back — that would abort derived subclass readers
+                     // (TEXT/MTEXT/DIMENSION/TABLE often carry layout/material extras).
++                    // EXCEPTION for marker-less files (R12/AC1009): geometry group
++                    // codes (first vertex 10/20/30 etc.) belong to the derived
++                    // entity reader — push them back and hand control over, or
++                    // LINE/ARC/CIRCLE geometry is silently swallowed as zeros.
++                    if (
++                        !sawAcDbEntityMarker &&
++                        (code === 10 || code === 20 || code === 30)
++                    ) {
++                        filer.pushBackItem(item);
++                        return this;
++                    }
+                     break;
+             }
+         }
