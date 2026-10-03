@@ -712,6 +712,22 @@ export class AcTrRenderer implements AcGiRenderer<AcTrEntity> {
    * @inheritdoc
    */
   lineSegments(array: Float32Array, itemSize: number, indices: Uint16Array) {
+    // TEMP e2e debug: log raw draw payload (remove).
+    if (import.meta.env.DEV) {
+      const g = globalThis as { __batchLog?: string[] }
+      g.__batchLog ??= []
+      if (g.__batchLog.length < 400) {
+        const sample: string[] = []
+        for (let i = 0; i < Math.min(2, array.length / itemSize); i++) {
+          sample.push(
+            `${array[i * itemSize].toFixed(2)},${array[i * itemSize + 1].toFixed(2)}`
+          )
+        }
+        g.__batchLog.push(
+          `draw n=${array.length / itemSize} itemSize=${itemSize} sample=[${sample.join(' | ')}]`
+        )
+      }
+    }
     if (this._directCapture !== 'off') {
       if (isComplexLineType(this._subEntityTraits.lineType.pattern)) {
         this.missDirectCapture()
@@ -874,6 +890,18 @@ export class AcTrRenderer implements AcGiRenderer<AcTrEntity> {
   }
 
   private linePoints(points: AcGePoint3dLike[]) {
+    // TEMP e2e debug: log capture entry points (remove).
+    if (import.meta.env.DEV) {
+      const g = globalThis as { __batchLog?: string[] }
+      g.__batchLog ??= []
+      if (g.__batchLog.length < 400 && points.length) {
+        const p0 = points[0]
+        const p1 = points[Math.min(1, points.length - 1)]
+        g.__batchLog.push(
+          `capture kind=lineStrip n=${points.length} p0=(${Number(p0.x).toFixed(2)},${Number(p0.y).toFixed(2)}) p1=(${Number(p1.x).toFixed(2)},${Number(p1.y).toFixed(2)})`
+        )
+      }
+    }
     if (this._directCapture !== 'off') {
       if (points.length < 2) {
         this.missDirectCapture()
