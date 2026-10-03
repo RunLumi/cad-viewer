@@ -1,0 +1,21 @@
+# ArtiosCAD R12 regression: hop tay gai / nap gai (99 model-space entities).
+#
+# Companion to artioscad-hop-cung.yaml — see that file for run instructions.
+# This drawing rendered exactly 1 of 99 entities under the render-path
+# regression; the assertion below fails until every entity reaches the scene.
+
+url: ${MAESTRO_BASE_URL}/?fixture=/e2e/artioscad-hop-tay-gai-nap-gai.dxf&minInk=2000
+env:
+  MAESTRO_BASE_URL: "http://localhost:5273"
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    text: "e2e: file=artioscad-hop-tay-gai-nap-gai.dxf"
+    timeoutMillis: 30000
+- assertVisible:
+    text: "entities=99 pending=false"
+    timeoutMillis: 60000
+- assertVisible:
+    text: "inkOK=true"
+    timeoutMillis: 30000

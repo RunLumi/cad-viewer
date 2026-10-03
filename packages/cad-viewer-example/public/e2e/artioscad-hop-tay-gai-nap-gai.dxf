@@ -1,0 +1,1652 @@
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1009
+  9
+$EXTMIN
+ 10
+0
+ 20
+0
+  9
+$EXTMAX
+ 10
+260.5
+ 20
+225
+  0
+ENDSEC
+  0
+SECTION
+  2
+TABLES
+  0
+TABLE
+  2
+LAYER
+ 70
+ 1
+  0
+LAYER
+  2
+Design
+ 70
+64
+ 62
+7
+  6
+CONTINUOUS
+  0
+ENDTAB
+  0
+ENDSEC
+  0
+SECTION
+  2
+BLOCKS
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+136
+ 20
+60
+ 11
+136
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+216
+ 20
+60
+ 11
+216
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.5
+ 20
+60
+ 11
+260.5
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+11
+ 20
+60
+ 11
+11
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+11
+ 20
+60
+ 11
+0
+ 21
+62.947
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+0
+ 20
+62.947
+ 11
+0
+ 21
+62.947
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+11
+ 20
+165
+ 11
+11
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+11
+ 20
+165
+ 11
+0
+ 21
+162.053
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+0
+ 20
+162.053
+ 11
+0
+ 21
+62.947
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+11
+ 20
+60
+ 11
+11
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+165
+ 11
+136
+ 21
+165.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+165.5
+ 11
+136
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+209.75
+ 11
+143.5
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+143.5
+ 20
+209.75
+ 11
+143.5
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+143.5
+ 20
+209
+ 11
+208.5
+ 21
+209
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+143.5
+ 20
+209.75
+ 11
+143.5
+ 21
+208
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136.5
+ 20
+209.75
+ 11
+136.5
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+165
+ 11
+216
+ 21
+165.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+165.5
+ 11
+216
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+209.75
+ 11
+208.5
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+208.5
+ 20
+209.75
+ 11
+208.5
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+208.5
+ 20
+209.75
+ 11
+208.5
+ 21
+208
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+215.5
+ 20
+209.75
+ 11
+215.5
+ 21
+209.75
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+136
+ 20
+165.5
+ 11
+216
+ 21
+165.5
+  0
+ARC
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+155.485266956
+ 20
+209.000118645
+ 40
+19.000070617
+ 50
+122.637893398
+ 51
+177.738103206
+  0
+ARC
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+196.514756018
+ 20
+209.000131809
+ 40
+19.000047141
+ 50
+2.261859862
+ 51
+57.362143534
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+145.238
+ 20
+225
+ 11
+206.762
+ 21
+225
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+60
+ 11
+136
+ 21
+59.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+59.5
+ 11
+136
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+15.25
+ 11
+143.5
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+143.5
+ 20
+15.25
+ 11
+143.5
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+143.5
+ 20
+16
+ 11
+208.5
+ 21
+16
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+143.5
+ 20
+15.25
+ 11
+143.5
+ 21
+17
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136.5
+ 20
+15.25
+ 11
+136.5
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+60
+ 11
+216
+ 21
+59.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+59.5
+ 11
+216
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+15.25
+ 11
+208.5
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+208.5
+ 20
+15.25
+ 11
+208.5
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+208.5
+ 20
+15.25
+ 11
+208.5
+ 21
+17
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+215.5
+ 20
+15.25
+ 11
+215.5
+ 21
+15.25
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+136
+ 20
+59.5
+ 11
+216
+ 21
+59.5
+  0
+ARC
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+155.485266956
+ 20
+15.999881355
+ 40
+19.000070617
+ 50
+-177.738103206
+ 51
+-122.637893398
+  0
+ARC
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+196.514733044
+ 20
+15.999881355
+ 40
+19.000070617
+ 50
+-57.362106602
+ 51
+-2.261896794
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+145.238
+ 20
+0
+ 11
+206.762
+ 21
+0
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+165
+ 11
+136
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+165
+ 11
+133.5
+ 21
+167.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+133.5
+ 20
+167.5
+ 11
+132
+ 21
+195
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+91.25
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91.25
+ 20
+165
+ 11
+91.25
+ 21
+170
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91.25
+ 20
+170
+ 11
+94.25
+ 21
+173
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+94.25
+ 20
+173
+ 11
+100.145
+ 21
+195
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+100.145
+ 20
+195
+ 11
+132
+ 21
+195
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+91.25
+ 20
+165
+ 11
+136
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+165
+ 11
+216
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+165
+ 11
+218.5
+ 21
+167.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+218.5
+ 20
+167.5
+ 11
+220
+ 21
+195
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.5
+ 20
+165
+ 11
+260.25
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.25
+ 20
+165
+ 11
+260.25
+ 21
+170
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.25
+ 20
+170
+ 11
+257.25
+ 21
+173
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+257.25
+ 20
+173
+ 11
+251.355
+ 21
+195
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+251.355
+ 20
+195
+ 11
+220
+ 21
+195
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+260.25
+ 20
+165
+ 11
+216
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+60
+ 11
+216
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+216
+ 20
+60
+ 11
+218.5
+ 21
+57.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+218.5
+ 20
+57.5
+ 11
+220
+ 21
+30
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.5
+ 20
+60
+ 11
+260.25
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.25
+ 20
+60
+ 11
+260.25
+ 21
+55
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+260.25
+ 20
+55
+ 11
+257.25
+ 21
+52
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+257.25
+ 20
+52
+ 11
+251.355
+ 21
+30
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+251.355
+ 20
+30
+ 11
+220
+ 21
+30
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+260.25
+ 20
+60
+ 11
+216
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+11
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+165
+ 11
+11
+ 21
+165
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+60
+ 11
+136
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+136
+ 20
+60
+ 11
+133.5
+ 21
+57.5
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+133.5
+ 20
+57.5
+ 11
+132
+ 21
+30
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91
+ 20
+60
+ 11
+91.25
+ 21
+60
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91.25
+ 20
+60
+ 11
+91.25
+ 21
+55
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+91.25
+ 20
+55
+ 11
+94.25
+ 21
+52
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+94.25
+ 20
+52
+ 11
+100.145
+ 21
+30
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+1
+ 10
+100.145
+ 20
+30
+ 11
+132
+ 21
+30
+  0
+LINE
+  8
+Design
+  6
+CONTINUOUS
+ 62
+2
+ 10
+91.25
+ 20
+60
+ 11
+136
+ 21
+60
+  0
+ENDSEC
+  0
+EOF
