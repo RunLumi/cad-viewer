@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PrintUp 3D — die-line fold view</title>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #101014; overflow: hidden;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #app { position: fixed; inset: 0; }
+  .panel { position: fixed; top: 16px; left: 16px; z-index: 10; padding: 14px 16px;
+    background: rgba(16, 16, 22, 0.82); border: 1px solid #2c2c36; border-radius: 12px;
+    color: #e8e8f0; width: 300px; backdrop-filter: blur(6px); }
+  .panel h1 { font-size: 14px; margin: 0 0 2px; letter-spacing: 0.02em; }
+  .panel .sub { font-size: 11px; color: #9a9ab0; margin-bottom: 12px; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 10px 0; font-size: 12px; }
+  .row label { width: 74px; color: #b8b8cc; }
+  input[type="range"] { flex: 1; accent-color: #667eea; }
+  button { background: #4f5fd0; border: none; color: #fff; padding: 7px 12px;
+    border-radius: 8px; font-size: 12px; cursor: pointer; }
+  button.ghost { background: #2c2c3a; }
+  button:hover { filter: brightness(1.1); }
+  input[type="file"] { display: none; }
+  .foot { font-size: 10px; color: #6a6a80; margin-top: 10px; line-height: 1.5; }
+  .foot a { color: #8891ff; }
+  #err { color: #ff6a6a; font-size: 11px; margin-top: 8px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="panel">
+  <h1>PrintUp 3D · die-line fold view</h1>
+  <div class="sub">separate view from the 2D editor — drag to orbit, wheel to zoom</div>
+  <div class="row"><label>Fold</label><input id="fold" type="range" min="0" max="100" value="100" /><span id="foldv" style="width:34px;text-align:right">100%</span></div>
+  <div class="row">
+    <button id="play">▶ Fold animation</button>
+    <button id="flat" class="ghost">Flat</button>
+    <button id="box" class="ghost">Box</button>
+  </div>
+  <div class="row">
+    <button id="demo">Load demo die-line</button>
+    <button class="ghost" id="filebtn">Open DXF…</button>
+    <input id="file" type="file" accept=".dxf,.DWG,.DXF" />
+  </div>
+  <div id="err"></div>
+  <div class="foot">
+    Panel detection: wall creases span the main body band; flaps + tuck tabs
+    fold around horizontal hinges. Artwork is the original DXF linework mapped
+    onto each panel.<br/>
+    Includes <a href="./vendor/LICENSE-three.js.txt">three.js (MIT)</a>.
+    2D editor: <a href="/">printup-editor.runlumi.app</a>
+  </div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from './vendor/OrbitControls.js';
+
+// ---------- basic scene ----------
+const app = document.getElementById('app');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+app.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101014);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 4000);
+camera.position.set(320, 380, 420);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(130, 40, -50);
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const foldGroup = new THREE.Group(); // holds the whole hinge tree
+scene.add(foldGroup);
+scene.add(new THREE.AmbientLight(0xffffff, 1.15));
+const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+dir.position.set(300, 600, 400);
+scene.add(dir);
+
+// ---------- DXF parsing (LINE + ARC, with ACI color) ----------
+const ACI = { 1: 0xff5050, 2: 0xffd020, 3: 0x35d06a, 4: 0x35a5d0, 5: 0x3550ff, 6: 0xd040d0, 7: 0xf0f0f0 };
+const aciColor = c => new THREE.Color(ACI[c] ?? 0xf0f0f0);
+const H = Math.PI / 2;
+
+function parseDXF(text) {
+  const raw = text.split(/\r?\n/);
+  const pairs = [];
+  for (let i = 0; i + 1 < raw.length; i += 2) pairs.push([raw[i].trim(), raw[i + 1].trim()]);
+  let ent = null; let props = {}; const out = [];
+  const flush = () => {
+    if (ent === 'LINE') out.push({ k: 'L', c: +(props['62'] ?? 7),
+      a: [+props['10'], +props['20']], b: [+props['11'], +props['21']] });
+    if (ent === 'ARC') out.push({ k: 'A', c: +(props['62'] ?? 7),
+      cx: +props['10'], cy: +props['20'], r: +props['40'], a0: +props['50'] * Math.PI / 180, a1: +props['51'] * Math.PI / 180 });
+    props = {};
+  };
+  for (const [c, v] of pairs) {
+    if (c === '0') { flush(); ent = v; }
+    else if (ent === 'LINE' || ent === 'ARC') props[c] = v;
+  }
+  flush();
+  return out;
+}
+function tessArc(a) {
+  const pts = []; let span = a.a1 - a.a0;
+  while (span < 0) span += Math.PI * 2;
+  const n = Math.max(8, Math.ceil(span / (Math.PI / 24)));
+  const s = a.a0, e = a.a0 + span;
+  for (let i = 0; i <= n; i++) {
+    const t = s + (e - s) * (i / n);
+    pts.push([a.cx + a.r * Math.cos(t), a.cy + a.r * Math.sin(t)]);
+  }
+  return pts;
+}
+function segsFromEntities(ents) {
+  const segs = [];
+  for (const e of ents) {
+    if (e.k === 'L') segs.push({ k: 'L', c: e.c, a: e.a, b: e.b });
+    else { const pts = tessArc(e); for (let i = 0; i + 1 < pts.length; i++) segs.push({ k: 'A', c: e.c, a: pts[i], b: pts[i + 1] }); }
+  }
+  return segs;
+}
+
+// ---------- die-line structure detection ----------
+const near = (a, b, tol = 1.2) => Math.abs(a - b) < tol;
+function analyze(segs) {
+  const xs = [], ys = [];
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const s of segs) for (const p of [s.a, s.b]) {
+    x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]);
+    y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]);
+  }
+  for (const s of segs) {
+    if (s.k && Math.abs(s.a[0] - s.b[0]) < 0.01 && Math.abs(s.a[1] - s.b[1]) > 0.01) xs.push([(s.a[1] + s.b[1]) / 2, Math.abs(s.a[1] - s.b[1]), s.a[0]]);
+    if (s.k && Math.abs(s.a[1] - s.b[1]) < 0.01 && Math.abs(s.a[0] - s.b[0]) > 0.01) ys.push([(s.a[0] + s.b[0]) / 2, Math.abs(s.a[0] - s.b[0]), s.a[1]]);
+  }
+  const cluster = vals => {
+    const u = []; vals.sort((p, q) => p - q);
+    for (const v of vals) { if (u.length && Math.abs(u[u.length - 1] - v) < 1.2) continue; u.push(v); }
+    return u;
+  };
+  // main body band: tallest CONSECUTIVE crease gap with the most horizontal ink
+  const hy = cluster(ys.map(v => v[2]));
+  let band = null, best = 0;
+  for (let i = 0; i + 1 < hy.length; i++) {
+    const a = hy[i], b = hy[i + 1];
+    if (b - a < (y1 - y0) * 0.25) continue;
+    let ink = 0;
+    for (const s of ys) if (s[2] >= a && s[2] <= b) ink += s[1];
+    if (ink > best) { best = ink; band = [a, b]; }
+  }
+  if (!band) band = [y0, y1];
+  // wall creases: verticals spanning >= 85% of band height
+  const creases = [];
+  for (const s of segs) {
+    if (Math.abs(s.a[0] - s.b[0]) > 0.01) continue;
+    const lo = Math.min(s.a[1], s.b[1]), hi = Math.max(s.a[1], s.b[1]);
+    const cover = Math.min(hi, band[1]) - Math.max(lo, band[0]);
+    if (cover >= (band[1] - band[0]) * 0.85) creases.push(s.a[0]);
+  }
+  const wallCreases = cluster(creases);
+  return { x0, x1, y0, y1, band, wallCreases };
+}
+
+// ---------- hinge tree build ----------
+let foldables = []; // { group, axis: 'y'|'x+',|'x-', target }
+let fold = 1, target = 1;
+
+function buildModel(segs) {
+  const { band, wallCreases } = analyze(segs);
+  const [bt, bb] = [Math.min(band[0], band[1]), Math.max(band[0], band[1])];
+  const bandH = bb - bt;
+  // panels above/below band (stacks of flaps) per wall column
+  const hyAll = [];
+  for (const s of segs) if (Math.abs(s.a[1] - s.b[1]) < 0.01) hyAll.push([s.a[1], Math.min(s.a[0], s.b[0]), Math.max(s.a[0], s.b[0])]);
+  const rows = dir => { // dir=-1 above band, +1 below band
+    const edge = dir < 0 ? bb : bt;
+    const cand = [...new Set(hyAll.map(h => h[0]).filter(y => dir < 0 ? y > bb + 1 && y < bt + (bt - bt) + 1e9 : y < bt - 1)
+      .concat(dir < 0 ? [] : []))];
+    return cand.sort((a, b) => dir < 0 ? a - b : b - a);
+  };
+  const aboveRows = [...new Set(hyAll.map(h => h[0]).filter(y => y > bb + 1))].sort((a, b) => a - b);
+  const belowRows = [...new Set(hyAll.map(h => h[0]).filter(y => y < bt - 1))].sort((a, b) => b - a);
+  const segsIn = (xa, xb, ya, yb) => segs.filter(s => {
+    const mx = (s.a[0] + s.b[0]) / 2, my = (s.a[1] + s.b[1]) / 2;
+    const r = { x0: Math.min(s.a[0], s.b[0]), x1: Math.max(s.a[0], s.b[0]), y0: Math.min(s.a[1], s.b[1]), y1: Math.max(s.a[1], s.b[1]) };
+    return mx >= xa - 0.5 && mx <= xb + 0.5 && r.y0 >= ya - 0.6 && r.y1 <= yb + 0.6;
+  });
+  const artwork = (parent, segs2, px0, py0) => {
+    const byColor = new Map();
+    for (const s of segs2) {
+      if (!byColor.has(s.c)) byColor.set(s.c, []);
+      byColor.get(s.c).push(s.a[0] - px0, -(s.a[1] - py0), 0.6, s.b[0] - px0, -(s.b[1] - py0), 0.6);
+    }
+    for (const [c, arr] of byColor) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+      parent.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: aciColor(c) })));
+    }
+  };
+  const panelMesh = (w, h) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color: 0x232028, side: THREE.DoubleSide }));
+    m.rotation.x = -H;
+    return m;
+  };
+
+  foldGroup.clear();
+  foldables = [];
+  // wall chain
+  let parent = foldGroup, cursorX = wallCreases[0];
+  const walls = [];
+  for (let i = 0; i + 1 < wallCreases.length; i++) {
+    const hinge = wallCreases[i] - cursorX;
+    const w = wallCreases[i + 1] - wallCreases[i];
+    const group = new THREE.Group();
+    group.position.set(hinge, 0, 0);
+    parent.add(group);
+    const panel = panelMesh(w, bandH);
+    panel.position.set(w / 2, 0, -bandH / 2);
+    group.add(panel);
+    artwork(group, segsIn(wallCreases[i], wallCreases[i + 1], bt, bb), wallCreases[i], bt);
+    const f = { group, axis: 'y', target: -H };
+    foldables.push(f);
+    // flap stacks above (top) and below (bottom) this wall
+    const stack = (rows, topSide) => {
+      let p = group, yFrom = topSide ? bb : bt;
+      for (const ry of rows) {
+        if (ry === undefined) continue;
+        const h2 = Math.abs(ry - yFrom);
+        if (h2 < 1) continue;
+        const fg = new THREE.Group();
+        fg.position.set(0, 0, -(yFrom - bt));
+        p.add(fg);
+        const pm = panelMesh(w, h2);
+        pm.position.set(w / 2, 0, topSide ? -h2 / 2 : h2 / 2);
+        fg.add(pm);
+        artwork(fg, segsIn(wallCreases[i], wallCreases[i + 1], topSide ? yFrom : ry, topSide ? ry : yFrom), wallCreases[i], topSide ? ry : yFrom);
+        const ff = { group: fg, axis: 'x', target: (topSide ? 1 : -1) * H * (i % 2 === 0 ? 1 : -1) };
+        foldables.push(ff);
+        p = fg; yFrom = ry;
+      }
+    };
+    // top rows ascending from bb, bottom rows descending from bt
+    const topRows = [...new Set(hyAll.map(h => h[0]).filter(y => y > bb + 1))].sort((a, b) => a - b);
+    const bottomRows = [...new Set(hyAll.map(h => h[0]).filter(y => y < bt - 1))].sort((a, b) => b - a);
+    stack(topRows, true);
+    stack(bottomRows, false);
+    parent = group; cursorX = wallCreases[i];
+    walls.push(w);
+  }
+  // world placement: center the flat layout
+  const total = wallCreases[wallCreases.length - 1] - wallCreases[0];
+  foldGroup.position.set(-total / 2, 0, (bb - bt) / 2);
+  window.__dbg = { band: [bt, bb], wallCreases, walls: walls.length, foldables: foldables.length, children: foldGroup.children.length, segs: segs.length, first: segs.slice(0, 3),
+    foldDump: foldables.slice(0, 8).map(fo => ({ axis: fo.axis, rx: +fo.group.rotation.x.toFixed(2), ry: +fo.group.rotation.y.toFixed(2), pos: fo.group.position.toArray().map(n => +n.toFixed(1)) })) };
+  return { wallCount: wallCreases.length - 1 };
+}
+function fitCamera() {
+  const box = new THREE.Box3().setFromObject(foldGroup);
+  if (box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3());
+  controls.target.copy(c);
+  const r = Math.max(box.getSize(new THREE.Vector3()).length() / 2, 60);
+  camera.position.set(c.x + r * 1.4, c.y + r * 1.2, c.z + r * 1.6);
+  controls.update();
+}
+
+// ---------- fold control ----------
+function applyFold(f) {
+  fold = f;
+  for (const fo of foldables) {
+    const t = fo.target * f;
+    if (fo.axis === 'y') fo.group.rotation.y = t;
+    else fo.group.rotation.x = t;
+  }
+  document.getElementById('fold').value = Math.round(f * 100);
+  document.getElementById('foldv').textContent = Math.round(f * 100) + '%';
+}
+let playing = false, playT0 = 0;
+const playBtn = document.getElementById('play');
+playBtn.onclick = () => { playing = !playing; playT0 = performance.now(); playBtn.textContent = playing ? '⏸ Pause' : '▶ Fold animation'; };
+document.getElementById('fold').oninput = e => { playing = false; playBtn.textContent = '▶ Fold animation'; applyFold((+e.target.value) / 100); };
+document.getElementById('flat').onclick = () => { playing = false; applyFold(0); };
+document.getElementById('box').onclick = () => { playing = false; applyFold(1); };
+function tick(now) {
+  if (playing) {
+    const t = ((now - playT0) / 2400) % 2;
+    const f = t < 1 ? t : 2 - t;
+    applyFold(f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2);
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// ---------- loading ----------
+async function loadText(text, label) {
+  document.getElementById('err').textContent = '';
+  const segs = segsFromEntities(parseDXF(text));
+  if (!segs.length) { document.getElementById('err').textContent = 'No LINE/ARC entities found in ' + (label || 'file'); return; }
+  const info = buildModel(segs);
+  applyFold(1);
+  setTimeout(fitCamera, 50);
+  playBtn.textContent = '▶ Fold animation';
+}
+const DEMO = '/e2e/artioscad-hop-tay-gai-nap-gai.dxf';
+const demoBtn = document.getElementById('demo');
+demoBtn.onclick = async () => {
+  demoBtn.textContent = 'Loading…';
+  try { await loadText(await (await fetch(DEMO)).text(), 'demo'); demoBtn.textContent = 'Load demo die-line'; }
+  catch (e) { document.getElementById('err').textContent = 'Load failed: ' + e.message + '\n' + (e.stack || '').split('\n').slice(0, 6).join('\n'); demoBtn.textContent = 'Load demo die-line'; }
+};
+document.getElementById('filebtn').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  await loadText(await f.text(), f.name);
+};
+// auto-load demo on start
+demoBtn.click();
+</script>
+</body>
+</html>
